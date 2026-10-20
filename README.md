@@ -1,4 +1,4 @@
-\# Gran Central – Agente base (Checkpoint 1)
+Gran Central – Agente base (Checkpoint 1)
 
 
 
@@ -12,7 +12,7 @@ Acá vemos el flujo completo ejecutado en verde.
 
 
 
-!\[Flujo](flujo.png)
+(flujo.png)
 
 
 
@@ -20,7 +20,7 @@ Acá vemos la conversación con el bot en Telegram.
 
 
 
-!\[Telegram](telegram.png)
+(telegram.png)
 
 
 
@@ -28,5 +28,5 @@ Acá vemos el mail de log con los pasos que hizo el agente.
 
 
 
-!\[Log](log.png)
+(log.png)
 
