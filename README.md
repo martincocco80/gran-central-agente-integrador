@@ -1,2 +1,26 @@
-# gran-central-agente-integrador
-Agente de calificación de consultas para Gran Central. Proyecto integrador AI Automation Avanzado
+\# Gran Central – Agente base (Checkpoint 1)
+
+
+
+Agente de calificación de consultas para la mueblería Gran Central, armado en n8n.
+
+Recibe mensajes por Telegram, consulta el catálogo y registra las consultas en Notion, con un log de cada ejecución por Gmail.
+
+
+
+Acá vemos el flujo completo ejecutado en verde.
+
+!\[Flujo](workflow corrido)
+
+
+
+Acá vemos la conversación con el bot en Telegram.
+
+!\[Telegram](respuesta 1.png)
+
+
+
+Acá vemos el mail de log con los pasos que hizo el agente.
+
+!\[Log](log error.png)
+
