@@ -10,17 +10,23 @@ Recibe mensajes por Telegram, consulta el catálogo y registra las consultas en 
 
 Acá vemos el flujo completo ejecutado en verde.
 
-!\[Flujo](workflow corrido)
+
+
+!\[Flujo](flujo.png)
 
 
 
 Acá vemos la conversación con el bot en Telegram.
 
-!\[Telegram](respuesta 1.png)
+
+
+!\[Telegram](telegram.png)
 
 
 
 Acá vemos el mail de log con los pasos que hizo el agente.
 
-!\[Log](log error.png)
+
+
+!\[Log](log.png)
 
