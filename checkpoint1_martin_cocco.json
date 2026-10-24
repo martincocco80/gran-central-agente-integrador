@@ -195,7 +195,7 @@
             {
               "id": "127aa58f-9834-43ed-b06c-ed0d65af9e08",
               "name": "email_log",
-              "value": "=martincocco80@gmail.com",
+              "value": "tu_mail@ejemplo.com",
               "type": "string"
             }
           ]
@@ -351,8 +351,7 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true
+    "binaryMode": "separate"
   },
   "versionId": "1ab20b77-ef46-4956-94fa-869f543e69b3",
   "meta": {

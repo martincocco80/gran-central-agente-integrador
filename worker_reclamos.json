@@ -1,0 +1,321 @@
+{
+  "name": "Worker – Reclamos",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "874c479a-3e2e-4f7d-bcac-5784a5fb770d",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "f50eac55-5e12-45f0-bfe9-182b22294d7c",
+              "name": "worker",
+              "value": "reclamos",
+              "type": "string"
+            },
+            {
+              "id": "03c9b53f-bb06-4302-b766-69238ccbc5f8",
+              "name": "message",
+              "value": "={{ $json.error ? 'No pudimos procesar el reclamo en este momento.' : 'No encontramos el pedido ' + $('Trigger – Datos del reclamo').item.json.numero_pedido + '.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3184,
+        -64
+      ],
+      "id": "98fe9ba4-eaed-43dd-9837-29eb19df013e",
+      "name": "Set – Respuesta error"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "042e1d69-a4a6-471e-938f-72919a469699",
+          "mode": "list",
+          "cachedResultName": "Pedidos",
+          "cachedResultUrl": "https://app.notion.com/p/fd58bd86721d43889c8f95ad82bb512b"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "N° pedido|title",
+              "condition": "equals",
+              "richTextValue": "={{ $json.numero_pedido }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        2400,
+        -80
+      ],
+      "id": "32fb1ded-2444-4369-b788-8c77d0218ca4",
+      "name": "Notion – Buscar pedido",
+      "alwaysOutputData": true,
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "AgXsiFKKydm63nnM",
+          "name": "Notion Grancentral"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d01c4cf1-367e-4548-a8f6-7b414a74b827",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2624,
+        -176
+      ],
+      "id": "b195eb89-2ca0-4ca1-a259-478ebfd75f64",
+      "name": "If – Pedido encontrado"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "84b2653c-4227-41cd-be63-b76c6633db61",
+          "mode": "list",
+          "cachedResultName": "Reclamos",
+          "cachedResultUrl": "https://app.notion.com/p/c04e07894d7b4633bf86fc57058c118f"
+        },
+        "title": "=Reclamo {{ $('Trigger – Datos del reclamo').item.json.numero_pedido }} ({{ $('Trigger – Datos del reclamo').item.json.motivo }})",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Motivo|select",
+              "selectValue": "={{ $('Trigger – Datos del reclamo').item.json.motivo }}"
+            },
+            {
+              "key": "Estado|select",
+              "selectValue": "Pendiente"
+            },
+            {
+              "key": "Gravedad|select",
+              "selectValue": "={{ ['Defecto de fabricación', 'Daño en el envío'].includes($('Trigger – Datos del reclamo').item.json.motivo) ? 'Grave' : 'Leve' }}"
+            },
+            {
+              "key": "Pedido|relation",
+              "relationValue": [
+                "={{ $json.id }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        2848,
+        -224
+      ],
+      "id": "f5b798db-28d5-4531-9a61-366225db8c9e",
+      "name": "Notion – Registrar reclamo",
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "AgXsiFKKydm63nnM",
+          "name": "Notion Grancentral"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a3cb5cf-8348-4469-96bc-aa65589bd0dc",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "8344db40-8914-474f-be20-f87ac4b03e79",
+              "name": "worker",
+              "value": "reclamos",
+              "type": "string"
+            },
+            {
+              "id": "5edc6b6f-3de1-40f8-962c-e0cb0a6593e1",
+              "name": "message",
+              "value": "=Registramos tu reclamo por el pedido {{ $('Trigger – Datos del reclamo').item.json.numero_pedido }}.",
+              "type": "string"
+            },
+            {
+              "id": "c4307e66-48d5-4baf-a6a9-75a8503a2b15",
+              "name": "data",
+              "value": "={{ { numero_pedido: $('Trigger – Datos del reclamo').item.json.numero_pedido, motivo: $('Trigger – Datos del reclamo').item.json.motivo, estado: 'Pendiente' } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3072,
+        -272
+      ],
+      "id": "f6fe8dc7-478b-4a33-812f-bed4e603f577",
+      "name": "Set – Respuesta OK"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "numero_pedido"
+            },
+            {
+              "name": "motivo"
+            }
+          ]
+        }
+      },
+      "id": "d7173657-a7eb-4a82-8b91-5d4b66f07a73",
+      "typeVersion": 1.1,
+      "name": "Trigger – Datos del reclamo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        2192,
+        -80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Notion – Buscar pedido": {
+      "main": [
+        [
+          {
+            "node": "If – Pedido encontrado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If – Pedido encontrado": {
+      "main": [
+        [
+          {
+            "node": "Notion – Registrar reclamo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion – Registrar reclamo": {
+      "main": [
+        [
+          {
+            "node": "Set – Respuesta OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger – Datos del reclamo": {
+      "main": [
+        [
+          {
+            "node": "Notion – Buscar pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set – Respuesta OK": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 60
+  },
+  "versionId": "df4b2d30-33fd-405a-8fbd-cc1bf02987c3",
+  "meta": {
+    "instanceId": "9e4973f7abe77367cc48061cb967efccae05a40968d11f457f3b944eb39ee8f4"
+  },
+  "nodeGroups": [],
+  "id": "B1hHui6eNatno85B",
+  "tags": []
+}

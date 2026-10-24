@@ -1,0 +1,548 @@
+{
+  "name": "Worker – Presupuestos",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9823d7d3-5a44-4203-9113-b8ec0a1159e5",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "870ca2ee-72d7-497f-9fb6-c2ce2401fe46",
+              "name": "worker",
+              "value": "presupuestos",
+              "type": "string"
+            },
+            {
+              "id": "c839060c-b3c1-4f98-ae1e-c0b22bfd9579",
+              "name": "message",
+              "value": "={{ $json.error ? 'No pudimos procesar el presupuesto en este momento.' : (!$('Notion – Buscar producto').item.json.id ? 'No encontramos el producto ' + $('Trigger – Datos del presupuesto').item.json.producto + ' en nuestro catálogo.' : 'No trabajamos con el material ' + $('Trigger – Datos del presupuesto').item.json.material + '.') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3824,
+        112
+      ],
+      "id": "9848a714-8793-4972-836b-6639f1c5d00a",
+      "name": "Set – Respuesta error"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "a1f02112-ea95-4a53-b899-c76fa621219f",
+          "mode": "list",
+          "cachedResultName": "Catálogo",
+          "cachedResultUrl": "https://app.notion.com/p/dd5531d033014d85b334d699ee416c5d"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Producto|title",
+              "condition": "equals",
+              "richTextValue": "={{ $json.producto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        2384,
+        16
+      ],
+      "id": "d7cd9675-fba6-4260-b209-f821250b9e94",
+      "name": "Notion – Buscar producto",
+      "alwaysOutputData": true,
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "AgXsiFKKydm63nnM",
+          "name": "Notion Grancentral"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "a1749fd3-fe26-4965-a1a9-5677a08244c5",
+          "mode": "list",
+          "cachedResultName": "Materiales",
+          "cachedResultUrl": "https://app.notion.com/p/08a31d4c0ca7404e8ff71ab6974b48d8"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Material|title",
+              "condition": "equals",
+              "richTextValue": "={{ $('Trigger – Datos del presupuesto').item.json.material }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        2688,
+        16
+      ],
+      "id": "7876d23b-43c4-4a98-bd81-8b7f6a3f4925",
+      "name": "Notion – Buscar material",
+      "alwaysOutputData": true,
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "AgXsiFKKydm63nnM",
+          "name": "Notion Grancentral"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 1000,
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3360,
+        -48
+      ],
+      "id": "b5e7512d-f5fb-4158-82a3-aa68920fae67",
+      "name": "Groq – Redactor",
+      "credentials": {
+        "groqApi": {
+          "id": "LdFC2rW1m0nmCRPb",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fabcc030-08a2-4f8d-b44b-5ac08855e536",
+              "leftValue": "={{ $('Notion – Buscar producto').item.json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "72a3d50c-63a2-48dd-8a3a-3e2aeafa6893",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2912,
+        -80
+      ],
+      "id": "5f800972-97fe-4ea0-be8f-02663f5dbd6e",
+      "name": "If – Datos encontrados"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "17426164-a8a6-49bc-9cd0-ee1d9cd08a3e",
+              "name": "producto",
+              "value": "={{ $('Trigger – Datos del presupuesto').item.json.producto }}",
+              "type": "string"
+            },
+            {
+              "id": "1041c407-a8b9-4be8-9458-54d9b2e468fa",
+              "name": "material",
+              "value": "={{ $('Trigger – Datos del presupuesto').item.json.material }}",
+              "type": "string"
+            },
+            {
+              "id": "03afedbe-ccb4-44ee-947b-85cae27fd23c",
+              "name": "medida_m",
+              "value": "={{ $('Trigger – Datos del presupuesto').item.json.medida_m }}",
+              "type": "number"
+            },
+            {
+              "id": "7d93e7b9-5340-470c-820f-3b1327b6c2bd",
+              "name": "cantidad",
+              "value": "={{ $('Trigger – Datos del presupuesto').item.json.cantidad }}",
+              "type": "number"
+            },
+            {
+              "id": "269d44d7-0439-4bc2-a3f0-474fcaec3694",
+              "name": "plazo_dias",
+              "value": "={{ $('Notion – Buscar producto').item.json['property_plazo_fabricación_días'] }}",
+              "type": "number"
+            },
+            {
+              "id": "0806ca7b-01f9-4cf4-a7d6-5a488df2d27a",
+              "name": "total",
+              "value": "={{ Math.round($('Notion – Buscar producto').item.json.property_precio_base * ($('Notion – Buscar producto').item.json.property_unidad_de_precio === 'Por metro lineal' ? $('Trigger – Datos del presupuesto').item.json.medida_m : 1) * $('Trigger – Datos del presupuesto').item.json.cantidad * (1 + $json.property_recargo)) }}",
+              "type": "number"
+            },
+            {
+              "id": "23b40dd4-daec-45cf-8b8b-74f00160be0c",
+              "name": "numero",
+              "value": "=P-{{ $now.toFormat('yyyyMMdd-HHmmss') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3136,
+        -176
+      ],
+      "id": "5c3ddbd5-820c-462a-99ce-690ca4ac0512",
+      "name": "Set – Calcular presupuesto"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Redactá el borrador de un presupuesto para un cliente de Gran Central, una mueblería que fabrica muebles a medida.\n\nDatos:\n- Cliente: {{ $('Trigger – Datos del presupuesto').first().json.nombre }}\n- Producto: {{ $json.producto }}\n- Material: {{ $json.material }}\n- Medida: {{ $json.medida_m }} m\n- Cantidad: {{ $json.cantidad }}\n- Total: ${{ $json.total.toLocaleString('es-AR') }}\n- Plazo de fabricación: {{ $json.plazo_dias }} días\n\nReglas:\n- Escribilo como un mensaje para el cliente, en uno o dos párrafos, sin listas ni viñetas.\n- Empezá saludando al cliente por su nombre.\n- Si el nombre del cliente está vacío, saludá sin nombre.\n- Español rioplatense con voseo, tono cordial y profesional.\n- Máximo 70 palabras, en texto plano, sin markdown.\n- Usá exactamente el total y el plazo indicados. No agregues descuentos, formas de pago ni envíos.\n- Cerrá invitando a confirmar el pedido y firmá \"Equipo Gran Central\".",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3360,
+        -176
+      ],
+      "id": "23783f07-b636-43a7-96f9-0592f71302e7",
+      "name": "IA – Redactar borrador",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "ec950375-3c1e-4691-a05f-3013eed657b4",
+          "mode": "list",
+          "cachedResultName": "Presupuestos",
+          "cachedResultUrl": "https://app.notion.com/p/26e4ed7298a44904b6d72e19513a1d84"
+        },
+        "title": "={{ $('Set – Calcular presupuesto').first().json.numero }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Producto|relation",
+              "relationValue": [
+                "={{ $('Notion – Buscar producto').first().json.id }}"
+              ]
+            },
+            {
+              "key": "Material|relation",
+              "relationValue": [
+                "={{ $('Notion – Buscar material').first().json.id }}"
+              ]
+            },
+            {
+              "key": "Medidas|rich_text",
+              "textContent": "={{ $('Set – Calcular presupuesto').first().json.medida_m }} m"
+            },
+            {
+              "key": "Cantidad|number",
+              "numberValue": "={{ $('Set – Calcular presupuesto').first().json.cantidad }}"
+            },
+            {
+              "key": "Total|number",
+              "numberValue": "={{ $('Set – Calcular presupuesto').first().json.total }}"
+            },
+            {
+              "key": "Estado de aprobación|select",
+              "selectValue": "Pendiente"
+            },
+            {
+              "key": "Borrador IA|rich_text",
+              "textContent": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [
+        3728,
+        -176
+      ],
+      "id": "67e4110a-0788-40eb-8933-75da9279f16a",
+      "name": "Notion – Registrar presupuesto",
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "AgXsiFKKydm63nnM",
+          "name": "Notion Grancentral"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b471ccdc-75ff-467f-8937-378a7f0ddfb6",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "b1517efa-43f4-4e1a-8606-5c7096576657",
+              "name": "worker",
+              "value": "presupuestos",
+              "type": "string"
+            },
+            {
+              "id": "3c138087-0936-4bb7-9232-406dcca8b2fc",
+              "name": "message",
+              "value": "=Preparamos tu presupuesto {{ $('Set – Calcular presupuesto').item.json.numero }}: total ${{ $('Set – Calcular presupuesto').item.json.total.toLocaleString('es-AR') }} y plazo de fabricación de {{ $('Set – Calcular presupuesto').item.json.plazo_dias }} días.",
+              "type": "string"
+            },
+            {
+              "id": "15f8143b-4411-41d0-adb8-ad6d74292f77",
+              "name": "data",
+              "value": "={{ { numero: $('Set – Calcular presupuesto').item.json.numero, total: $('Set – Calcular presupuesto').item.json.total, borrador: $('IA – Redactar borrador').item.json.text } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3920,
+        -192
+      ],
+      "id": "9844e769-d863-4671-bfe3-f0a269808b18",
+      "name": "Set – Respuesta OK"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "producto"
+            },
+            {
+              "name": "material"
+            },
+            {
+              "name": "medida_m",
+              "type": "number"
+            },
+            {
+              "name": "cantidad",
+              "type": "number"
+            },
+            {
+              "name": "nombre"
+            }
+          ]
+        }
+      },
+      "id": "3139b8d8-925e-4f8f-9a0e-e0caa2295633",
+      "typeVersion": 1.1,
+      "name": "Trigger – Datos del presupuesto",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        2176,
+        16
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Notion – Buscar producto": {
+      "main": [
+        [
+          {
+            "node": "Notion – Buscar material",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion – Buscar material": {
+      "main": [
+        [
+          {
+            "node": "If – Datos encontrados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If – Datos encontrados": {
+      "main": [
+        [
+          {
+            "node": "Set – Calcular presupuesto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set – Calcular presupuesto": {
+      "main": [
+        [
+          {
+            "node": "IA – Redactar borrador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA – Redactar borrador": {
+      "main": [
+        [
+          {
+            "node": "Notion – Registrar presupuesto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion – Registrar presupuesto": {
+      "main": [
+        [
+          {
+            "node": "Set – Respuesta OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set – Respuesta error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq – Redactor": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA – Redactar borrador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger – Datos del presupuesto": {
+      "main": [
+        [
+          {
+            "node": "Notion – Buscar producto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 60
+  },
+  "versionId": "f97708f3-ecb7-4baa-8917-a5df8dcea79e",
+  "meta": {
+    "instanceId": "9e4973f7abe77367cc48061cb967efccae05a40968d11f457f3b944eb39ee8f4"
+  },
+  "nodeGroups": [],
+  "id": "ChBC6y7tf9KGeOE1",
+  "tags": []
+}
