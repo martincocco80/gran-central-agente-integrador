@@ -1,0 +1,270 @@
+{
+  "name": "Ingesta – Manual Gran Central",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Carga del Manual de Políticas – Gran Central",
+        "formDescription": "Subí la versión vigente del manual en .docx para actualizar la base de conocimiento del asistente.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Manual",
+              "fieldType": "file",
+              "fieldName": "manual",
+              "multipleFiles": false,
+              "acceptFileTypes": ".docx,.pdf",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Versión",
+              "fieldName": "version",
+              "placeholder": "1.0",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -544,
+        16
+      ],
+      "id": "eaf6e223-1763-410f-a540-c88aa167e6aa",
+      "name": "Form – Subir manual",
+      "webhookId": "beb1c415-2ec8-4a70-acbd-8c638973dadf"
+    },
+    {
+      "parameters": {
+        "tier": "cost_effective",
+        "inputDataFieldName": "manual"
+      },
+      "type": "@llamaindex/n8n-nodes-llamacloud.llamaParsePlatform",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        16
+      ],
+      "id": "92bc7088-c338-4aae-9160-9f343cd25513",
+      "name": "LlamaParse – Parsear manual"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8942697d-096c-4fc0-b042-aa701c1504c0",
+              "name": "texto",
+              "value": "={{ $json.text.replace(/Gran Central · Manual de Políticas Comerciales · v[\\d.]+/g, '').replace(/Página \\d+/g, '').replace(/\\n-{3,}\\n/g, '\\n').replace(/\\n{3,}/g, '\\n\\n').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "fe2f0cb1-3d8f-4901-ad1f-9c30a6c49fc3",
+              "name": "fuente",
+              "value": "={{ $('Form – Subir manual').item.binary.manual.fileName.replace(/\\.[^.]+$/, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "29926851-10c3-4c79-b1a3-7cc6205a572a",
+              "name": "version",
+              "value": "={{ $('Form – Subir manual').item.json.version }}",
+              "type": "string"
+            },
+            {
+              "id": "3b9fd38b-860a-4840-b97f-750afa22e1c5",
+              "name": "fecha_carga",
+              "value": "={{ $now.toFormat('yyyy-MM-dd') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -96,
+        16
+      ],
+      "id": "81371eab-1e34-4223-b31b-e07006da592d",
+      "name": "Set – Texto limpio y metadata"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "gran-central-manual",
+          "mode": "list",
+          "cachedResultName": "gran-central-manual"
+        },
+        "options": {
+          "clearNamespace": true,
+          "pineconeNamespace": "politicas"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        16
+      ],
+      "id": "3593b3ec-cd45-4fc8-8d5e-85e5f8bb18ed",
+      "name": "Pinecone – Guardar manual",
+      "credentials": {
+        "pineconeApi": {
+          "id": "xKFnNcGJPB7pNH2o",
+          "name": "Gran Central Pinecone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.texto }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "fuente",
+                "value": "={{ $json.fuente }}"
+              },
+              {
+                "name": "version",
+                "value": "={{ $json.version }}"
+              },
+              {
+                "name": "fecha_carga",
+                "value": "={{ $json.fecha_carga }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        192
+      ],
+      "id": "57730321-2c71-4474-ac59-801e543112f1",
+      "name": "Loader – Manual con metadata"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 150,
+        "options": {
+          "splitCode": "markdown"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        208,
+        368
+      ],
+      "id": "df204027-2d7b-42ed-91bb-919597cb2f59",
+      "name": "Splitter – Chunks de 1000"
+    },
+    {
+      "parameters": {
+        "model": "=text-embedding-3-small",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        192
+      ],
+      "id": "76354821-b738-41a1-85df-832319d80b49",
+      "name": "Embeddings – 3-small"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form – Subir manual": {
+      "main": [
+        [
+          {
+            "node": "LlamaParse – Parsear manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LlamaParse – Parsear manual": {
+      "main": [
+        [
+          {
+            "node": "Set – Texto limpio y metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set – Texto limpio y metadata": {
+      "main": [
+        [
+          {
+            "node": "Pinecone – Guardar manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loader – Manual con metadata": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone – Guardar manual",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Splitter – Chunks de 1000": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Loader – Manual con metadata",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings – 3-small": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone – Guardar manual",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "7d2d0f01-f561-4844-b528-4c1a7f212ae9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9e4973f7abe77367cc48061cb967efccae05a40968d11f457f3b944eb39ee8f4"
+  },
+  "nodeGroups": [],
+  "id": "AEnnPZvFxYZjakYO",
+  "tags": []
+}
